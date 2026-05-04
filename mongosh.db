@@ -1,0 +1,162 @@
+1:
+   db.createCollection("books", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["title"],
+      properties: {
+        title: {
+          bsonType: "string",
+          minLength: 1,
+          description: "title must be a non-empty string"
+        }
+      }
+    }
+  }
+});
+{ ok: 1 }
+
+
+
+
+
+2:
+
+db.authors.insertOne({name:"author one",nationality:"british"})
+{
+  acknowledged: true,
+  insertedId: ObjectId('69c22d2d901432762cab626e')
+}
+
+3:
+db.createCollection("logs", {capped:true, size:1000000})
+{ ok: 1 }
+
+4:
+db.books.createIndex({title:1})
+title_1
+
+5:
+db.books.insertOne({title:"book1",author:"ali",year:"1937",genders:["fantasy","adventure"]})
+{
+  acknowledged: true,
+  insertedId: ObjectId('69c2556fe97c0b1546941f56')
+}
+
+
+6:
+db.books.insertMany([{title:"book2",author:"mohamed",year:1960,genders:["science fiction"]},{title:"book3",author:"ibrahim",year:2006,genders:["classic","fiction"]},{title:"book4",author:"ahmed",year:2022,genders:["science fiction","action"]}])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('69c258aae97c0b1546941f57'),
+    '1': ObjectId('69c258aae97c0b1546941f58'),
+    '2': ObjectId('69c258aae97c0b1546941f59')
+  }
+}
+
+7:
+db.logs.insertOne({book_id:"69c2556fe97c0b1546941f56",action:"borrowed"})
+{
+  acknowledged: true,
+  insertedId: ObjectId('69c25927e97c0b1546941f5a')
+}
+
+8:
+db.books.updateOne({title:"book4"},{$set:{year:2020}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+9:
+db.books.findOne({title:"book1"})
+{
+  _id: ObjectId('69c2556fe97c0b1546941f56'),
+  title: 'book1',
+  author: 'ali',
+  year: '1937',
+  genders: [
+    'fantasy',
+    'adventure'
+  ]
+}
+
+
+10:
+db.books.find({genders:["science fiction"]})
+{
+  _id: ObjectId('69c258aae97c0b1546941f57'),
+  title: 'book2',
+  author: 'mohamed',
+  year: 1960,
+  genders: [
+    'science fiction'
+  ]
+}
+
+
+11:
+db.books.find({year:{$type:"int"}})
+{
+  _id: ObjectId('69c258aae97c0b1546941f57'),
+  title: 'book2',
+  author: 'mohamed',
+  year: 1960,
+  genders: [
+    'science fiction'
+  ]
+}
+{
+  _id: ObjectId('69c258aae97c0b1546941f57'),
+  title: 'book2',
+  author: 'mohamed',
+  year: 2006,
+  genders: [
+    'science fiction'
+  ]
+}
+{
+  _id: ObjectId('69c258aae97c0b1546941f57'),
+  title: 'book2',
+  author: 'mohamed',
+  year: 2020,
+  genders: [
+    'science fiction'
+  ]
+}
+
+12:
+db.books.deleteMany({year:{$lt:2000}})
+{
+  acknowledged: true,
+  deletedCount: 1
+}
+
+
+13:
+db.books.aggregate([{$match:{
+        year:{$gt:2000}
+    }},{$sort:{year:-1}},{$project:{"_id":0}}])
+
+
+14:
+db.books.aggregate([{$match:{
+        year:{$gt:2000}
+    }},{$project:{"_id":0,title:1,author:1,year:1}}])
+{
+  title: 'book3',
+  author: 'ibrahim',
+  year: 2006
+}
+
+
+15:
+db.books.aggregate([{$unwind:"$genders"},{$project:{"_id":0,"title":1,"genders":1}}])
+      
+  title: 'book1',
+  genders: 'fantasy'
+}
